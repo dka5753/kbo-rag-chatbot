@@ -1,0 +1,59 @@
+# API 1개 + 워커 N개 + Postgres + Ollama
+#   docker compose up -d --build
+#   docker compose exec ollama ollama pull llama3.1:8b && docker compose exec ollama ollama pull bge-m3
+#   docker compose run --rm indexer
+#   docker compose up -d --scale worker=3
+x-app: &app
+  build: .
+  env_file: .env
+  environment:
+    DATABASE_URL: postgresql+psycopg://kbo:kbo@db:5432/kbo
+    OLLAMA_BASE_URL: http://ollama:11434
+    VECTOR_DIR: /app/.chroma
+  volumes:
+    - chroma:/app/.chroma
+  depends_on:
+    db:
+      condition: service_healthy
+
+services:
+  api:
+    <<: *app
+    ports: ["8000:8000"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz')"]
+      interval: 10s
+
+  worker:
+    <<: *app
+    command: ["python", "-m", "kbo_bot.worker"]
+
+  indexer:
+    <<: *app
+    command: ["python", "-m", "kbo_bot.rag"]
+    profiles: ["tools"]
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: kbo
+      POSTGRES_PASSWORD: kbo
+      POSTGRES_DB: kbo
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kbo"]
+      interval: 5s
+
+  ollama:
+    image: ollama/ollama
+    volumes: [ollama:/root/.ollama]
+    # GPU 사용 시 아래 주석 해제
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices: [{ driver: nvidia, count: all, capabilities: [gpu] }]
+
+volumes:
+  pgdata:
+  chroma:
+  ollama:

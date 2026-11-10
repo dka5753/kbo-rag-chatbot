@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kbo-rag-chatbot"
+version = "0.1.0"
+description = "KBO 야구 Q&A 에이전트: LangGraph 워크플로(RAG + 코드 실행) + FastAPI 비동기 작업 API"
+requires-python = ">=3.11"
+dependencies = [
+  "langgraph>=1.0",
+  "langchain-core>=1.0",
+  "langchain-text-splitters",
+  "langchain-chroma",
+  "chromadb",
+  "langchain-ollama",
+  "langchain-openai",
+  "langchain-anthropic",
+  "pandas>=2.2",
+  "numpy",
+  "fastapi>=0.115",
+  "uvicorn[standard]",
+  "sqlalchemy>=2.0",
+  "psycopg[binary]",
+  "python-dotenv",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "httpx", "ruff"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src", "tests"]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+ignore = ["E501"]
