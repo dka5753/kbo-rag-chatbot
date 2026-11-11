@@ -36,6 +36,11 @@ class Settings:
     code_timeout_s: int = field(default_factory=lambda: int(os.getenv("CODE_TIMEOUT_S", "10")))
     max_code_retries: int = field(default_factory=lambda: int(os.getenv("MAX_CODE_RETRIES", "2")))
 
+    # 작업 큐: 워커 heartbeat 주기, heartbeat 가 이만큼 끊기면 죽은 것으로 판단, 작업당 최대 시도 횟수
+    job_heartbeat_s: float = field(default_factory=lambda: float(os.getenv("JOB_HEARTBEAT_S", "10")))
+    job_stale_after_s: float = field(default_factory=lambda: float(os.getenv("JOB_STALE_AFTER_S", "60")))
+    job_max_attempts: int = field(default_factory=lambda: int(os.getenv("JOB_MAX_ATTEMPTS", "3")))
+
 
 def get_settings() -> Settings:
     return Settings()
