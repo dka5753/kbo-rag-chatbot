@@ -25,7 +25,7 @@ dependencies = [
   "python-dotenv",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = ["pytest", "httpx", "ruff"]
 
 [tool.setuptools.packages.find]
