@@ -47,7 +47,12 @@ def load_and_split(docs_dir: Path, chunk_size: int = 600, overlap: int = 80) -> 
 def build_index(s: Settings | None = None, reset: bool = True) -> int:
     s = s or get_settings()
     if reset and s.vector_dir.exists():
-        shutil.rmtree(s.vector_dir)
+        # 디렉터리 자체는 남긴다: Docker volume 마운트 지점이면 rmdir 이 EBUSY 로 실패한다
+        for child in s.vector_dir.iterdir():
+            if child.is_dir():
+                shutil.rmtree(child)
+            else:
+                child.unlink()
     chunks = load_and_split(s.docs_dir)
     if not chunks:
         raise FileNotFoundError(f"{s.docs_dir} 에 .md 문서가 없습니다.")
